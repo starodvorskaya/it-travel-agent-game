@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IT.TRAVEL — Выживи в туризме</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6f6;color:#1a1a1a;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#game{max-width:620px;margin:auto;padding:16px;min-height:100vh}
+.top{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.logo{width:50px;height:50px;border-radius:13px;background:#1a1a1a;color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;letter-spacing:-.5px}
+.logo i{color:#00b4a6;font-style:normal}
+.brand{font-weight:900;font-size:20px}
+.muted{color:#707979;font-size:13px}
+.bar{height:6px;background:#dce4e4;border-radius:9px;margin:15px 0}
+.fill{height:100%;background:#00b4a6;border-radius:9px}
+.card{background:white;border-radius:20px;padding:17px;margin:10px 0;box-shadow:0 7px 25px #0001}
+.hero{text-align:center;padding:28px 18px}
+.big{font-size:58px}
+h1{font-size:28px;line-height:1.05;margin:12px 0}
+h2{margin:10px 0}
+p{line-height:1.45;color:#515959}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+button{width:100%;border:0;border-radius:14px;padding:14px;margin:6px 0;background:#1a1a1a;color:white;font-size:15px;font-weight:800;cursor:pointer}
+button.teal{background:#00b4a6}
+button.alt,.choice{background:white;color:#1a1a1a;border:2px solid #e0e7e7;text-align:left}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat{background:white;border-radius:13px;padding:9px;text-align:center;font-size:10px}
+.stat b{display:block;font-size:15px}
+.tag{display:inline-block;background:#edf7f6;padding:6px 9px;border-radius:99px;font-size:11px}
+.ok{background:#e4f7ef}
+.bad{background:#fff0f0}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #edf0f0}
+label{display:block;font-size:12px;font-weight:800;margin-top:8px}
+input{width:100%;padding:12px;border:2px solid #e0e7e7;border-radius:12px;font-size:16px}
+.score{font-size:46px;font-weight:900;color:#00a99d}
+@media(max-width:480px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+(function(){
+"use strict";
+
+const characters=[
+["Аня",24,"Новичок","👩🏻‍💻",25,55,20],
+["Макс",29,"Авантюрист","🧑🏻‍🎥",55,65,25],
+["София",32,"Менеджер","👩🏼‍💼",75,90,30],
+["Дмитрий",41,"Старший менеджер","👨🏻‍💼",90,80,35]
+];
+
+const passports=[
+["PETROVA","ANNA","12.04.1998","4518 382941"],
+["SOKOLOV","ILYA","03.11.1991","4021 617305"]
+];
+
+let state;
+
+function reset(){
+ state={cash:500000,rep:75,exp:0,stress:0,clients:0,errors:0,solved:0,hero:null,pass:null};
+}
+
+function money(n){
+ return new Intl.NumberFormat("ru-RU").format(Math.max(0,n))+" ₽";
+}
+
+function header(progress){
+ return '<div class="top"><div class="logo">IT<span><i>•</i></span>TRAVEL</div><div><div class="brand">IT.TRAVEL</div><div class="muted">ВЫЖИВИ В ТУРИЗМЕ</div></div></div>'+
+ '<div class="bar"><div class="fill" style="width:'+progress+'%"></div></div>';
+}
+
+function stats(){
+ return '<div class="stats">'+
+ '<div class="stat">💰<b>'+money(state.cash)+'</b>деньги</div>'+
+ '<div class="stat">❤️<b>'+state.rep+'</b>репутация</div>'+
+ '<div class="stat">⭐<b>'+state.exp+'</b>опыт</div>'+
+ '<div class="stat">😵<b>'+state.stress+'</b>стресс</div>'+
+ '</div>';
+}
+
+function render(content,progress){
+ document.getElementById("game").innerHTML=header(progress)+content;
+ window.scrollTo(0,0);
+}
+
+function start(){
+ reset();
+ render(
+ '<div class="card hero"><div class="big">✈️</div>'+
+ '<h1>ВЫЖИВИ В ТУРИЗМЕ</h1>'+
+ '<p>Ты — турагент IT.TRAVEL. Клиенты пишут одновременно, самолёты улетают, отели отменяют брони, а документы почему-то всегда содержат одну ошибку.</p>'+
+ '<p><b>Твоя задача:</b> сохранить деньги, клиентов и остатки нервной системы.</p>'+
+ '<button class="teal" data-action="choose">НАЧАТЬ ИГРУ</button></div>',0);
+}
+
+function choose(){
+ let cards=characters.map((c,i)=>
+ '<button class="choice" data-action="pick" data-i="'+i+'">'+
+ '<div style="font-size:32px">'+c[3]+'</div><b>'+c[0]+', '+c[1]+'</b>'+
+ '<div class="muted">'+c[2]+'</div><p>🧠 Опыт '+c[4]+' · 💬 Общение '+c[5]+' · 😵 Стресс '+c[6]+'</p></button>').join("");
+ render('<div class="card"><h1>👤 Выбери турагента</h1><p>У каждого свой опыт, стиль общения и стрессоустойчивость.</p></div><div class="grid">'+cards+'</div>',8);
+}
+
+function pick(i){
+ const c=characters[i];
+ state.hero=c; state.exp=c[4]; state.stress=c[6];
+ render(stats()+'<div class="card"><span class="tag">09:00 · ДЕНЬ 1</span><h1>☕ Доброе утро, '+c[0]+'!</h1><p>Сегодня: 8 активных клиентов, 4 вылета и 7 бронирований.</p><p><b>Главная задача:</b> сохранить деньги, клиентов и остатки нервной системы.</p></div><button class="teal" data-action="client">НАЧАТЬ РАБОТУ</button>',15);
+}
+
+function client(){
+ state.clients++;
+ render(stats()+'<div class="card"><span class="tag">🔴 СРОЧНО</span><h1>🪪 Ошибка в паспорте</h1><p>Анна Петрова вылетает сегодня. В заявке одна буква в фамилии отличается от паспорта.</p></div><button class="choice" data-action="passport">Проверить документы</button><button class="choice" data-action="badChoice">🙈 Не проверять</button>',23);
+}
+
+function passport(){
+ state.pass=passports[0];
+ render(stats()+'<div class="card"><h2>Паспорт туриста</h2>'+
+ '<div class="row"><span>Фамилия</span><b>'+state.pass[0]+'</b></div>'+
+ '<div class="row"><span>Имя</span><b>'+state.pass[1]+'</b></div>'+
+ '<div class="row"><span>Дата рождения</span><b>'+state.pass[2]+'</b></div>'+
+ '<div class="row"><span>Номер</span><b>'+state.pass[3]+'</b></div></div>'+
+ '<div class="card"><label>Фамилия</label><input id="surname" autocomplete="off"><label>Имя</label><input id="name" autocomplete="off"><label>Дата рождения</label><input id="birth" autocomplete="off"><label>Номер паспорта</label><input id="number" autocomplete="off"><button class="teal" data-action="check">ПРОВЕРИТЬ БРОНИРОВАНИЕ</button></div>',30);
+}
+
+function check(){
+ const get=id=>document.getElementById(id).value.trim();
+ if(get("surname").toUpperCase()===state.pass[0] && get("name").toUpperCase()===state.pass[1] && get("birth")===state.pass[2] && get("number")===state.pass[3]){
+   state.rep+=5; state.exp+=8; state.solved++;
+   render(stats()+'<div class="card ok"><h2>✅ Всё верно</h2><p>Ты заметил ошибку до подтверждения бронирования.</p></div><button class="teal" data-action="miss">ДАЛЬШЕ</button>',36);
+ }else{
+   state.errors++; state.rep-=8; state.stress+=8;
+   render(stats()+'<div class="card bad"><b>❌ Данные не совпадают.</b><p>Проверь каждую букву и цифру.</p></div><button data-action="passport">ИСПРАВИТЬ</button>',30);
+ }
+}
+
+function badChoice(){
+ state.errors++; state.rep-=15; state.stress+=12; miss();
+}
+
+function miss(){
+ render(stats()+'<div class="card"><span class="tag">10:17</span><h1>✈️ Турист проспал вылет</h1><p>Рейс уже улетел. Клиент звонит: «Я стою в аэропорту. Что теперь?!»</p></div>'+
+ '<button class="choice" data-action="act" data-v="45000,8,15,8">🎫 Купить новый билет<br><span class="muted">−45 000 ₽ · быстро</span></button>'+
+ '<button class="choice" data-action="act" data-v="0,3,8,22">📞 Связаться с авиакомпанией<br><span class="muted">бесплатно · есть риск</span></button>'+
+ '<button class="choice" data-action="act" data-v="1000,10,12,-5">💚 Позвать коллегу IT.TRAVEL<br><span class="muted">−1 000 ₽ · помощь команды</span></button>'+
+ '<button class="choice" data-action="act" data-v="0,-25,-5,35">🙃 Сказать, что это проблема клиента<br><span class="muted">0 ₽ · репутация −25</span></button>',45);
+}
+
+function act(v){
+ const [cost,rep,exp,stress]=v.split(",").map(Number);
+ state.cash-=cost; state.rep+=rep; state.exp+=exp; state.stress+=stress; state.solved++;
+ if(fail()) lose(); else business();
+}
+
+function business(){
+ render(stats()+'<div class="card"><span class="tag">12:05 · БИЗНЕС</span><h1>🧾 НДС изменился</h1><p>Расходы агентства растут. Как сохранить прибыльность?</p></div>'+
+ '<button class="choice" data-action="biz" data-v="-15000,3,8">📣 Сократить рекламные расходы<br><span class="muted">экономия денег, меньше заявок</span></button>'+
+ '<button class="choice" data-action="biz" data-v="0,-6,7">💸 Поднять цены для новых клиентов<br><span class="muted">маржа выше, риск недовольства</span></button>'+
+ '<button class="choice" data-action="biz" data-v="-25000,7,12">🤝 Переговорить с поставщиками<br><span class="muted">вложить деньги сейчас</span></button>'+
+ '<button class="choice" data-action="biz" data-v="-5000,8,18">💚 Позвать старшего менеджера<br><span class="muted">вместе пересчитать модель</span></button>',57);
+}
+
+function biz(v){
+ const [cost,rep,exp]=v.split(",").map(Number);
+ state.cash-=cost; state.rep+=rep; state.exp+=exp; state.solved++;
+ if(fail()) lose(); else multi();
+}
+
+function multi(){
+ render(stats()+'<div class="card"><span class="tag">14:40 · 3 ЧАТА</span><h1>📞 Все хотят вас одновременно</h1><p>Выберите, кому отвечать первым.</p></div>'+
+ '<button class="choice" data-action="multiAct" data-v="0,5,8">🔴 Вылет через 40 минут</button>'+
+ '<button class="choice" data-action="multiAct" data-v="0,2,15">🟡 Новый запрос на дорогой тур</button>'+
+ '<button class="choice" data-action="multiAct" data-v="0,3,12">🟢 Постоянный клиент</button>',68);
+}
+
+function multiAct(v){
+ const [cost,rep,stress]=v.split(",").map(Number);
+ state.cash-=cost; state.rep+=rep; state.stress+=stress; state.solved++;
+ if(fail()) lose(); else finalStep();
+}
+
+function finalStep(){
+ render(stats()+'<div class="card"><span class="tag">18:45 · ФИНАЛ</span><h1>🏨 Отель отменил бронь</h1><p>Туристы должны заселиться завтра. Клиент требует решение сейчас.</p></div>'+
+ '<button class="choice" data-action="finish" data-v="-30000,8,15">🏨 Забронировать альтернативу<br><span class="muted">−30 000 ₽</span></button>'+
+ '<button class="choice" data-action="finish" data-v="-5000,4,20">📞 Торговаться с отелем<br><span class="muted">−5 000 ₽</span></button>'+
+ '<button class="choice" data-action="finish" data-v="-1000,10,5">💚 Подключить команду IT.TRAVEL<br><span class="muted">−1 000 ₽</span></button>',85);
+}
+
+function finish(v){
+ const [cost,rep,stress]=v.split(",").map(Number);
+ state.cash+=cost; state.rep+=rep; state.stress+=stress; state.solved++;
+ fail()?lose():win();
+}
+
+function fail(){
+ return state.cash<300000 || state.rep<=25 || state.stress>=95;
+}
+
+function win(){
+ const score=Math.max(0,Math.min(100,Math.round(state.rep*.5+state.exp*.35+(100-state.stress)*.15)));
+ const rank=score>=90?"TRAVEL MASTER 👑":score>=75?"SENIOR TRAVEL MANAGER ⭐":score>=60?"TRAVEL MANAGER ✈️":"TRAVEL AGENT";
+ render('<div class="card hero"><div class="big">🎉</div><h1>УРА! ТЫ ВЫЖИЛ В ТУРИЗМЕ!</h1><div class="score">'+score+'/100</div><h2>'+rank+'</h2><p>Клиентов: '+(state.clients+2)+' · Проблем решено: '+state.solved+' · Ошибок: '+state.errors+'</p></div>'+stats()+
+ '<div class="card"><p>Ты пережил отмену вылета, документы, несколько клиентов одновременно и изменение НДС.</p><p><b>Теперь решать тебе.</b></p><button class="teal" data-action="help">💚 IT.TRAVEL</button><button class="alt" data-action="start">🔄 ПРОЙТИ ЕЩЁ РАЗ</button></div>',100);
+}
+
+function lose(){
+ render('<div class="card hero"><div class="big">💀</div><h1>ТЫ НЕ ВЫЖИЛ В ТУРИЗМЕ</h1><p>Турист проспал самолёт. Отель отменил бронь. Клиент требует решение. А НДС решил добить тебя окончательно.</p>'+stats()+
+ '<p>Но теперь ты хотя бы знаешь, что работа турагента — это не просто «найти тур подешевле» 😂</p><button class="teal" data-action="help">💚 IT.TRAVEL, СПАСАЙ</button><button class="alt" data-action="start">🔄 ПОПРОБОВАТЬ ЕЩЁ РАЗ</button></div>',100);
+}
+
+function help(){
+ render('<div class="card hero"><div class="big">💚</div><h1>IT.TRAVEL</h1><p><b>Попробуй выжить в туризме. А потом реши — доверить путешествия нам или стать одним из нас.</b></p>'+
+ '<button class="teal" data-action="agency">✈️ ДОВЕРИТЬ ПУТЕШЕСТВИЕ КОМАНДЕ</button>'+
+ '<button class="teal" data-action="school">🎓 НАУЧИТЬСЯ И СТАТЬ ЧАСТЬЮ IT.TRAVEL</button>'+
+ '<button class="alt" data-action="start">Вернуться в игру</button></div>',100);
+}
+
+document.getElementById("game").addEventListener("click",function(e){
+ const b=e.target.closest("button[data-action]");
+ if(!b) return;
+ const a=b.dataset.action;
+ if(a==="start") start();
+ else if(a==="choose") choose();
+ else if(a==="pick") pick(Number(b.dataset.i));
+ else if(a==="client") client();
+ else if(a==="passport") passport();
+ else if(a==="check") check();
+ else if(a==="badChoice") badChoice();
+ else if(a==="miss") miss();
+ else if(a==="act") act(b.dataset.v);
+ else if(a==="biz") biz(b.dataset.v);
+ else if(a==="multiAct") multiAct(b.dataset.v);
+ else if(a==="finish") finish(b.dataset.v);
+ else if(a==="win") win();
+ else if(a==="lose") lose();
+ else if(a==="help") help();
+ else if(a==="agency") alert("Здесь будет ссылка на IT.TRAVEL");
+ else if(a==="school") alert("Здесь будет ссылка на школу туризма IT.TRAVEL");
+});
+
+start();
+})();
+</script>
+</body>
+</html>
